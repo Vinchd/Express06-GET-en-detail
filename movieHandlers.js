@@ -32,15 +32,18 @@ const getMovies = (req, res) => {
   const sqlValues = [];
 
   if (req.query.color != null) {
-    sql += " where color = ?";
+    sql += " WHERE color = ?";
     sqlValues.push(req.query.color);
 
     if (req.query.max_duration != null) {
-      sql += " and duration <= ?";
+      sql += " AND duration <= ?";
       sqlValues.push(req.query.max_duration);
     }
+  } else if (+req.query.max_duration === 0) {
+    res.status(404).send("Invalid max_duration value");
+    return;
   } else if (req.query.max_duration != null) {
-    sql += " where duration <= ?";
+    sql += " WHERE duration <= ?";
     sqlValues.push(req.query.max_duration);
   }
 
@@ -75,8 +78,24 @@ const getMovieById = (req, res) => {
 };
 
 const getUsers = (req, res) => {
+  let sql = "SELECT * FROM users";
+  const sqlValues = [];
+
+  if (req.query.language != null) {
+    sql += " WHERE language = ?";
+    sqlValues.push(req.query.language);
+
+    if (req.query.city != null) {
+      sql += " AND city = ?";
+      sqlValues.push(req.query.city);
+    }
+  } else if (req.query.city != null) {
+    sql += " WHERE city = ?";
+    sqlValues.push(req.query.city);
+  }
+
   database
-    .query("select * from users")
+    .query(sql, sqlValues)
     .then(([users]) => {
       res.json(users);
     })
